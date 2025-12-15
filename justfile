@@ -7,3 +7,6 @@ build:
 
 push: build
     docker push {{image}}
+
+update-readme:
+    uvx --from cogapp cog -r README.md
