@@ -14,7 +14,7 @@ Options:
   -i, --image IMG Use specified Docker image (default: $CLAUDO_IMAGE or built-in)
   -n, --name NAME Create a named container 'claudo-NAME' that persists after exit
   --no-sudo       Disable sudo (adds no-new-privileges restriction)
-  --sandbox       Drop all capabilities (most restrictive)
+  --no-privileges Drop all capabilities (most restrictive)
   --tmp           Run isolated (no directory mount, workdir /workspaces/tmp)
   -v, --verbose   Display docker command before executing
   -h, --help      Show this help message
@@ -27,7 +27,7 @@ Examples:
   claudo --host                   Start with host networking
   claudo -n myproject             Start named persistent container
   claudo --no-sudo                Start without sudo privileges
-  claudo --sandbox                Start with all caps dropped
+  claudo --no-privileges          Start with all caps dropped
   claudo -- claude --help         Run claude with arguments
   claudo --dind                   Enable docker commands from inside container
   claudo --git                    Enable git commits from inside container
@@ -56,7 +56,7 @@ image="${CLAUDO_IMAGE:-ghcr.io/gregmuellegger/claudo:latest}"
 command_args=()
 tmp_mode=false
 no_sudo=false
-sandbox_mode=false
+no_privileges=false
 git_mode=false
 dind_mode=false
 verbose=false
@@ -92,8 +92,8 @@ while [[ $# -gt 0 ]]; do
             no_sudo=true
             shift
             ;;
-        --sandbox)
-            sandbox_mode=true
+        --no-privileges)
+            no_privileges=true
             shift
             ;;
         --tmp)
@@ -134,8 +134,8 @@ if [[ "$no_sudo" == true ]]; then
     docker_args+=(--security-opt=no-new-privileges:true)
 fi
 
-# Sandbox mode: drop all capabilities
-if [[ "$sandbox_mode" == true ]]; then
+# No privileges mode: drop all capabilities
+if [[ "$no_privileges" == true ]]; then
     docker_args+=(--cap-drop=ALL)
 fi
 

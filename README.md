@@ -14,15 +14,18 @@ To develop with claude code, I would usually setup a devcontainer environment to
 
 ## Features
 
-- mount the current directory into `/workspaces/`
-- no need to re-authenticate: mounts your `~/.claude` directory inside the container and sets `CLAUDE_CONFIG_DIR=~/.claude`
-
-With additional options it allows you to:
-
-- run docker-in-docker (use `--dind`)
-- mount your gitconfig (readonly) into the container so you can commit inside the container (use `--git`)
+- Mounts the current directory into `/workspaces/`
+- Mounts `~/.claude` for authentication persistence (no re-login required)
+- Docker-in-Docker support (`--dind`)
+- Git config mounting for commits inside container (`--git`)
+- Named persistent containers (`-n`)
+- Security hardening with `--no-sudo` or `--no-privileges`
+- Isolated mode without directory mount (`--tmp`)
+- Custom image support (`-i` or `$CLAUDO_IMAGE`)
 
 ## Installation
+
+Requires Docker.
 
 Install by placing the `claudo` script in your `~/.local/bin` directory. Make sure it is on `$PATH`.
 
@@ -62,7 +65,7 @@ Options:
   -i, --image IMG Use specified Docker image (default: $CLAUDO_IMAGE or built-in)
   -n, --name NAME Create a named container 'claudo-NAME' that persists after exit
   --no-sudo       Disable sudo (adds no-new-privileges restriction)
-  --sandbox       Drop all capabilities (most restrictive)
+  --no-privileges Drop all capabilities (most restrictive)
   --tmp           Run isolated (no directory mount, workdir /workspaces/tmp)
   -v, --verbose   Display docker command before executing
   -h, --help      Show this help message
@@ -75,7 +78,7 @@ Examples:
   claudo --host                   Start with host networking
   claudo -n myproject             Start named persistent container
   claudo --no-sudo                Start without sudo privileges
-  claudo --sandbox                Start with all caps dropped
+  claudo --no-privileges          Start with all caps dropped
   claudo -- claude --help         Run claude with arguments
   claudo --dind                   Enable docker commands from inside container
   claudo --git                    Enable git commits from inside container

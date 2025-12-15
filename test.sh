@@ -82,10 +82,10 @@ echo "Testing default allows privileges..."
 output=$(./claudo -- cat /proc/self/status | grep NoNewPrivs || true)
 [[ "$output" == *"0"* ]] && pass "default NoNewPrivs is 0" || fail "default privileges: $output"
 
-# Test: --sandbox drops capabilities
-echo "Testing --sandbox drops capabilities..."
-output=$(./claudo --sandbox -- cat /proc/self/status | grep CapEff || true)
-[[ "$output" == *"0000000000000000"* ]] && pass "--sandbox drops all caps" || fail "--sandbox caps: $output"
+# Test: --no-privileges drops capabilities
+echo "Testing --no-privileges drops capabilities..."
+output=$(./claudo --no-privileges -- cat /proc/self/status | grep CapEff || true)
+[[ "$output" == *"0000000000000000"* ]] && pass "--no-privileges drops all caps" || fail "--no-privileges caps: $output"
 
 # Test: --git mounts gitconfig
 echo "Testing --git mounts gitconfig..."

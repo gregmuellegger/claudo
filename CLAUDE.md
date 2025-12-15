@@ -15,6 +15,7 @@ Docker container for running Claude Code in an isolated environment.
 ```bash
 just build   # build image
 just push    # build and push to registry
+just update-readme  # runs cogapp on the README.md
 ```
 
 ## Key Behaviors
@@ -25,10 +26,11 @@ just push    # build and push to registry
 - Current directory mounted at `/workspaces/<dirname>`
 - `--tmp` runs isolated without mounting current directory
 - `--no-sudo` adds `no-new-privileges` security restriction
-- `--sandbox` drops all Linux capabilities
+- `--no-privileges` drops all Linux capabilities
 
 ## Guidelines
 
 - All `claudo` options must be documented in `claudo --help`
 - New behavior must be tested in `./test.sh`
 - Tests must not invoke `claude` in the container
+- When new dependencies for development are required, add them to `.devcontainer/postCreate.sh`
