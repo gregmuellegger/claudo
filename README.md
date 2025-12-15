@@ -10,7 +10,13 @@ It might be attacked by a prompt injection.
 
 To develop with claude code, I would usually setup a devcontainer environment to isolate the project - but in quick and dirty cases where I just need AI help with filesystem access, I would not bother to do the 2 minute setup. I just want a quick command like `claude` on the CLI which gives me the AI powers.
 
-`claudo` does that, but runs `claude --dangerously-skip-permissions` in a docker container.
+`claudo` does that, by running `claude --dangerously-skip-permissions` in a docker container.
+
+At its core `claudo` is a shortcut for (with a few more additional features, see below):
+
+```bash
+docker run -it --rm --hostname claudo -v $HOME/.claude:/home/claudo/.claude -v $PWD:/workspaces/$(basename $PWD) -w /workspaces/$(basename $PWD) ghcr.io/gregmuellegger/claudo:latest claude --dangerously-skip-permissions
+```
 
 ![claudo demo](demo/demo.gif)
 
