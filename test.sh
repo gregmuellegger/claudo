@@ -165,5 +165,31 @@ echo "Testing zsh config is loaded..."
 output=$(./claudo -- zsh -c 'echo $PATH')
 [[ "$output" == *".local/bin"* ]] && pass "PATH includes .local/bin" || fail "zsh PATH: $output"
 
+# Test: --attach errors when container doesn't exist
+echo "Testing --attach errors for nonexistent container..."
+output=$(./claudo --attach nonexistent 2>&1 || true)
+[[ "$output" == *"does not exist"* ]] && pass "--attach errors for nonexistent" || fail "--attach nonexistent: $output"
+
+# Test: --attach reattaches to stopped container
+echo "Testing --attach reattaches to stopped container..."
+./claudo -n attachtest -- echo "first run" > /dev/null
+output=$(./claudo --attach attachtest)
+docker rm -f claudo-attachtest > /dev/null 2>&1
+[[ "$output" == *"first run"* ]] && pass "--attach reattaches to stopped container" || fail "--attach stopped: $output"
+
+# Test: -a is alias for --attach
+echo "Testing -a is alias for --attach..."
+output=$(./claudo -a nonexistent 2>&1 || true)
+[[ "$output" == *"does not exist"* ]] && pass "-a works as alias" || fail "-a alias: $output"
+
+# Test: --attach errors when command args are passed
+echo "Testing --attach rejects command override..."
+output=$(./claudo --attach foo -- zsh 2>&1 || true)
+[[ "$output" == *"cannot override"* ]] && pass "--attach rejects command args" || fail "--attach command: $output"
+
+# Test: --attach help text
+echo "Testing --attach in help..."
+./claudo --help | grep -q "\-a, --attach" && pass "--attach in help" || fail "--attach help"
+
 echo
 echo "=== All tests passed ==="

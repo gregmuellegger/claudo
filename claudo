@@ -18,6 +18,7 @@ Options:
   --git           Mount git config (~/.gitconfig and credentials) for committing
   --pull          Always pull the latest image before running
   -n, --name NAME Create a named container 'claudo-NAME' that persists after exit
+  -a, --attach NAME  Attach to existing container 'claudo-NAME'
   --tmp           Run isolated (no directory mount, workdir /workspaces/tmp)
   -v, --verbose   Display docker command before executing
   --dry-run       Show docker command without executing (implies --verbose)
@@ -37,6 +38,7 @@ Examples:
   claudo --docker-socket          Use host Docker socket (sibling containers)
   claudo --git                    Enable git commits from inside container
   claudo -n myproject             Start named persistent container
+  claudo -a myproject             Attach to existing container
   claudo -- claude --help         Run claude with arguments
   claudo -n dev -e DEBUG=1 -- claude
                                   Combined options with command
@@ -60,6 +62,7 @@ env_args=()
 network_args=()
 prompt_arg=""
 container_name=""
+attach_name=""
 remove_flag="--rm"
 image="${CLAUDO_IMAGE:-ghcr.io/gregmuellegger/claudo:latest}"
 command_args=()
@@ -121,6 +124,10 @@ while [[ $# -gt 0 ]]; do
             remove_flag=""
             shift 2
             ;;
+        -a|--attach)
+            attach_name="$2"
+            shift 2
+            ;;
         --tmp)
             tmp_mode=true
             shift
@@ -149,6 +156,13 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Validate: --attach doesn't support command override
+if [[ -n "$attach_name" && ${#command_args[@]} -gt 0 ]]; then
+    echo "Error: --attach cannot override the container command" >&2
+    echo "Use 'docker exec -it claudo-$attach_name ${command_args[*]}' to run a different command" >&2
+    exit 1
+fi
 
 # Use -it if stdin is a terminal, otherwise just -i for piped input
 if [[ -t 0 ]]; then
@@ -244,6 +258,28 @@ fi
 
 if [[ "$dry_run" == true ]]; then
     exit 0
+fi
+
+# Handle attach mode
+if [[ -n "$attach_name" ]]; then
+    full_name="claudo-$attach_name"
+
+    # Check if container exists
+    if ! docker ps -a --format '{{.Names}}' | grep -q "^${full_name}$"; then
+        echo "Error: Container '$full_name' does not exist" >&2
+        echo "Use 'claudo -n $attach_name' to create it first" >&2
+        exit 1
+    fi
+
+    # Build the start command
+    start_args=(start -ai "$full_name")
+
+    if [[ "$verbose" == true ]]; then
+        printf '\e[2mdocker %s\e[0m\n' "${start_args[*]}" >&2
+    fi
+
+    docker "${start_args[@]}"
+    exit $?
 fi
 
 docker "${docker_args[@]}"
