@@ -8,6 +8,7 @@ Usage: claudo [OPTIONS] [--] [COMMAND...]
 
 Options:
   -e KEY=VALUE    Set environment variable in container (can be used multiple times)
+  -p, --prompt PROMPT  Run claude with -p (prompt mode)
   -i, --image IMG Use specified Docker image (default: $CLAUDO_IMAGE or built-in)
   --host          Use host network mode
   --no-sudo       Disable sudo (adds no-new-privileges restriction)
@@ -56,6 +57,7 @@ safe_dir_name="${dir_name//:/-}"
 
 env_args=()
 network_args=()
+prompt_arg=""
 container_name=""
 remove_flag="--rm"
 image="${CLAUDO_IMAGE:-ghcr.io/gregmuellegger/claudo:latest}"
@@ -74,6 +76,10 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         -e)
             env_args+=("-e" "$2")
+            shift 2
+            ;;
+        -p|--prompt)
+            prompt_arg="$2"
             shift 2
             ;;
         -i|--image)
@@ -210,7 +216,10 @@ docker_args+=("${env_args[@]}")
 docker_args+=("${network_args[@]}")
 docker_args+=("$image")
 
-if [[ ${#command_args[@]} -eq 0 ]]; then
+if [[ -n "$prompt_arg" ]]; then
+    # Prompt mode: run claude -p with the provided prompt
+    docker_args+=("claude" "--dangerously-skip-permissions" "-p" "$prompt_arg")
+elif [[ ${#command_args[@]} -eq 0 ]]; then
     if [[ -t 0 ]]; then
         docker_args+=("claude" "--dangerously-skip-permissions")
     else

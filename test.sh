@@ -145,6 +145,16 @@ echo "Testing --dind sets DIND_ENABLED..."
 output=$(./claudo --dind -- printenv DIND_ENABLED 2>&1 || true)
 [[ "$output" == *"true"* ]] && pass "--dind sets DIND_ENABLED=true" || fail "--dind env: $output"
 
+# Test: --prompt passes -p to claude
+echo "Testing --prompt passes -p to claude..."
+output=$(./claudo --dry-run --prompt "hello world" 2>&1)
+[[ "$output" == *"claude --dangerously-skip-permissions -p hello world"* ]] && pass "--prompt passes -p" || fail "--prompt: $output"
+
+# Test: -p is alias for --prompt
+echo "Testing -p is alias for --prompt..."
+output=$(./claudo --dry-run -p "test prompt" 2>&1)
+[[ "$output" == *"-p test prompt"* ]] && pass "-p works" || fail "-p: $output"
+
 # Test: zsh functions are available (via entrypoint sourcing .zshrc)
 echo "Testing zsh config is loaded..."
 output=$(./claudo -- zsh -c 'echo $PATH')
