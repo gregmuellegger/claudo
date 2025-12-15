@@ -257,5 +257,15 @@ echo "Testing --httpjail errors if httpjail not found..."
 output=$(PATH=/usr/bin:/bin ./claudo --httpjail -- echo test 2>&1 || true)
 [[ "$output" == *"httpjail"* && "$output" == *"not found"* && "$output" == *"nftables"* && "$output" == *"github.com/coder/httpjail"* ]] && pass "--httpjail missing error" || fail "--httpjail missing: $output"
 
+# Test: Unknown long option is rejected
+echo "Testing unknown long option is rejected..."
+output=$(./claudo --unknown-option 2>&1 || true)
+[[ "$output" == *"Unknown option"* && "$output" == *"--unknown-option"* ]] && pass "unknown long option rejected" || fail "unknown long option: $output"
+
+# Test: Unknown short option is rejected
+echo "Testing unknown short option is rejected..."
+output=$(./claudo -x 2>&1 || true)
+[[ "$output" == *"Unknown option"* && "$output" == *"-x"* ]] && pass "unknown short option rejected" || fail "unknown short option: $output"
+
 echo
 echo "=== All tests passed ==="

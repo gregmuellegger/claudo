@@ -173,6 +173,11 @@ while [[ $# -gt 0 ]]; do
             command_args=("$@")
             break
             ;;
+        -*)
+            echo "Error: Unknown option '$1'" >&2
+            echo "Run 'claudo --help' for usage information" >&2
+            exit 1
+            ;;
         *)
             command_args+=("$1")
             shift
