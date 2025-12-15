@@ -1,0 +1,9 @@
+{"version": 2, "width": 90, "height": 8, "timestamp": 1765791281, "env": {"SHELL": "/bin/bash", "TERM": "xterm-256color"}}
+[0.00773, "o", "$ # Install claudo\r\n"]
+[1.51094, "o", "$ curl -fsSL .../claudo -o ~/.local/bin/claudo && chmod +x ~/.local/bin/claudo\r\n"]
+[3.089295, "o", "$ pwd\r\n"]
+[3.591037, "o", "/tmp/demo\r\n"]
+[4.592674, "o", "$ echo \"Hey, print your current working directory, \\\r\nthen create hello.txt with: Hello from claudo!\" | \\\r\nclaudo\r\n"]
+[16.505921, "o", "Done, Gregor. Current working directory is `/workspaces/demo` and I've created `hello.txt` with the requested content.\r\n"]
+[17.876147, "o", "$ cat hello.txt\r\n"]
+[18.379109, "o", "Hello from claudo!\r\n"]

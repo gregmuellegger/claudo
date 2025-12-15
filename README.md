@@ -12,6 +12,8 @@ To develop with claude code, I would usually setup a devcontainer environment to
 
 `claudo` does that, but runs `claude --dangerously-skip-permissions` in a docker container.
 
+![claudo demo](demo/demo.gif)
+
 ## Features
 
 - Mounts the current directory into `/workspaces/`

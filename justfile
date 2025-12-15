@@ -10,3 +10,7 @@ push: build
 
 update-readme:
     uvx --from cogapp cog -r README.md
+
+update-demo:
+    asciinema rec --overwrite --cols 90 --rows 8 -c "./demo/record.sh" demo/demo.cast
+    agg demo/demo.cast demo/demo.gif
