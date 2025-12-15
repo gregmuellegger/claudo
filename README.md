@@ -135,6 +135,7 @@ Options:
   --tmp           Run isolated (no directory mount, workdir /workspaces/tmp)
   -v, --verbose   Display docker command before executing
   --dry-run       Show docker command without executing (implies --verbose)
+  --docker-opts OPTS  Pass additional options to docker run
   -h, --help      Show this help message
 
 Arguments after -- are passed directly as the container command.

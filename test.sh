@@ -155,6 +155,11 @@ echo "Testing -p is alias for --prompt..."
 output=$(./claudo --dry-run -p "test prompt" 2>&1)
 [[ "$output" == *"-p test prompt"* ]] && pass "-p works" || fail "-p: $output"
 
+# Test: --docker-opts passes options to docker
+echo "Testing --docker-opts passes options to docker..."
+output=$(./claudo --dry-run --docker-opts "--memory 2g" -- echo test 2>&1)
+[[ "$output" == *"--memory 2g"* ]] && pass "--docker-opts passes options" || fail "--docker-opts: $output"
+
 # Test: zsh functions are available (via entrypoint sourcing .zshrc)
 echo "Testing zsh config is loaded..."
 output=$(./claudo -- zsh -c 'echo $PATH')
