@@ -25,6 +25,11 @@ To develop with claude code, I would usually setup a devcontainer environment to
 - Isolated mode without directory mount (`--tmp`)
 - Custom image support (`-i` or `$CLAUDO_IMAGE`)
 
+## Security Considerations
+
+- **`~/.claude` is mounted read-write** for authentication persistence. Code running in the container can modify Claude's configuration and credentials.
+- **`--dind` grants host root equivalent access.** The Docker socket allows full control of the host via Docker. Only use when you trust the code running inside.
+
 The default image used is `ghcr.io/gregmuellegger/claudo:latest`. It is based on Ubuntu 24.04 with Claude Code pre-installed. Includes common dev tools: git, neovim, ripgrep, fd, fzf, jq, tmux, zsh (with oh-my-zsh), uv, and docker-cli.
 
 The image is updated weekly to incorporate latest Ubuntu security patches.

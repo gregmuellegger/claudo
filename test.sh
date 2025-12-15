@@ -47,6 +47,15 @@ echo "Testing current directory is mounted..."
 output=$(./claudo -- ls)
 [[ "$output" == *"claudo"* ]] && pass "current dir files visible" || fail "current dir: $output"
 
+# Test: Directory with colon is rejected
+echo "Testing directory with colon is rejected..."
+tmpdir=$(mktemp -d)
+colondir="$tmpdir/test:colon"
+mkdir -p "$colondir"
+output=$(cd "$colondir" && "$OLDPWD/claudo" -- echo "should fail" 2>&1 || true)
+rm -rf "$tmpdir"
+[[ "$output" == *"Directory path contains"* && "$output" == *":"* ]] && pass "colon in path rejected" || fail "colon rejection: $output"
+
 # Test: --tmp mode (isolated)
 echo "Testing --tmp mode..."
 output=$(./claudo --tmp -- pwd)

@@ -47,6 +47,8 @@ fi
 
 current_dir=$(pwd)
 dir_name=$(basename "$current_dir")
+# Sanitize directory name for Docker volume mount (colons break -v syntax)
+safe_dir_name="${dir_name//:/-}"
 
 env_args=()
 network_args=()
@@ -157,8 +159,15 @@ fi
 if [[ "$tmp_mode" == true ]]; then
     docker_args+=(-w "/workspaces/tmp")
 else
-    docker_args+=(-v "$current_dir:/workspaces/$dir_name")
-    docker_args+=(-w "/workspaces/$dir_name")
+    # Validate source path doesn't contain colons (breaks Docker -v syntax)
+    if [[ "$current_dir" == *:* ]]; then
+        echo "Error: Directory path contains ':' which breaks Docker volume mounts" >&2
+        echo "Path: $current_dir" >&2
+        echo "Use --tmp mode or rename the directory" >&2
+        exit 1
+    fi
+    docker_args+=(-v "$current_dir:/workspaces/$safe_dir_name")
+    docker_args+=(-w "/workspaces/$safe_dir_name")
 fi
 
 if [[ -n "$container_name" ]]; then
