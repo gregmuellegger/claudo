@@ -159,3 +159,40 @@ The current directory is mounted at /workspaces/<dirname>.
 ~/.claude is mounted for authentication persistence.
 ```
 <!--[[[end]]]-->
+
+## Use your own docker image
+
+You don't trust my docker image? I wouldn't trust yours either! Since we
+established mutual distrust, lets talk about how you can use this project
+anyways.
+
+If you inspected the `claudo` script and installed it, you can specify your own
+image by setting the `CLAUDO_IMAGE` env variable, e.g. in your
+`.bashrc`/`.zshrc`.
+
+Another alternative is to install the `claudo` script and during installation
+adjust the used image name:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/gregmuellegger/claudo/main/claudo | \
+  sed 's|ghcr.io/gregmuellegger/claudo:latest|<YOUR-IMAGE-HERE>:latest|' | \
+  tee ~/.local/bin/claudo > /dev/null && chmod +x ~/.local/bin/claudo
+```
+
+Your image must fulfill these requirements:
+
+- `claude` installed and on PATH
+- User home directory at `/home/claudo` (for mounting `~/.claude`)
+- `/workspaces/` directory exists (for working directory mounts)
+- For `--tmp` to work: `/workspaces/tmp/` needs to exist and writable for `claudo` user
+- For `--dind` to work: docker daemon must be installed and `docker-init.sh` needs to be setup (see `Dockerfile`)
+
+### Forking
+
+The other approach is, to just fork this repo. Feel free to! Then review the
+Dockerfile, adjust it to your needs and push your fork. The Github Actions are
+setup so that the new image is built after push, and an updated image is created
+every week.
+
+Then go ahead and either set `CLAUDO_IMAGE` or also adjust the `claudo` script
+of your fork to use your own image.
