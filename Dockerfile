@@ -1,5 +1,8 @@
 FROM ubuntu:24.04
 
+ARG BUILD_TIME
+LABEL org.opencontainers.image.created="${BUILD_TIME}"
+
 # Add Docker repository for docker-ce-cli
 RUN apt-get update && apt-get install -y ca-certificates curl \
     && install -m 0755 -d /etc/apt/keyrings \
@@ -42,6 +45,7 @@ RUN userdel -r ubuntu 2>/dev/null || true \
 ENV HOSTNAME=claudo
 ENV TERM=xterm-256color
 ENV CLAUDE_CONFIG_DIR=/home/claudo/.claude
+ENV BUILD_TIME="${BUILD_TIME}"
 
 USER claudo
 WORKDIR /home/claudo

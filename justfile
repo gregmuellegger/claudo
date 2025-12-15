@@ -3,7 +3,7 @@ set dotenv-load
 image := "ghcr.io/gregmuellegger/claudo:latest"
 
 build:
-    docker build -t {{image}} .
+    docker build --build-arg BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ") -t {{image}} .
 
 push: build
     docker push {{image}}
