@@ -191,5 +191,14 @@ output=$(./claudo --attach foo -- zsh 2>&1 || true)
 echo "Testing --attach in help..."
 ./claudo --help | grep -q "\-a, --attach" && pass "--attach in help" || fail "--attach help"
 
+# Test: --no-network disables network access
+echo "Testing --no-network disables network..."
+output=$(./claudo --no-network -- ping -c 1 8.8.8.8 2>&1 || true)
+[[ "$output" == *"Network is unreachable"* || "$output" == *"bad address"* || "$output" == *"unknown host"* ]] && pass "--no-network disables network" || fail "--no-network: $output"
+
+# Test: --no-network help text
+echo "Testing --no-network in help..."
+./claudo --help | grep -q "\-\-no-network" && pass "--no-network in help" || fail "--no-network help"
+
 echo
 echo "=== All tests passed ==="

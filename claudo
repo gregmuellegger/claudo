@@ -13,6 +13,7 @@ Options:
   --host          Use host network mode
   --no-sudo       Disable sudo (adds no-new-privileges restriction)
   --no-privileges Drop all capabilities (most restrictive)
+  --no-network    Disable network access (breaks Claude Code)
   --dind          Docker-in-Docker (runs dockerd inside container, requires privileged)
   --docker-socket Mount host Docker socket (sibling containers, host root equivalent)
   --git           Mount git config (~/.gitconfig and credentials) for committing
@@ -34,6 +35,7 @@ Examples:
   claudo --host                   Start with host networking
   claudo --no-sudo                Start without sudo privileges
   claudo --no-privileges          Start with all caps dropped
+  claudo --no-network             Start without network access
   claudo --dind                   Docker-in-Docker (isolated daemon)
   claudo --docker-socket          Use host Docker socket (sibling containers)
   claudo --git                    Enable git commits from inside container
@@ -69,6 +71,7 @@ command_args=()
 tmp_mode=false
 no_sudo=false
 no_privileges=false
+no_network=false
 git_mode=false
 dind_mode=false
 docker_socket_mode=false
@@ -101,6 +104,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --no-privileges)
             no_privileges=true
+            shift
+            ;;
+        --no-network)
+            no_network=true
             shift
             ;;
         --dind)
@@ -185,6 +192,11 @@ fi
 # No privileges mode: drop all capabilities
 if [[ "$no_privileges" == true ]]; then
     docker_args+=(--cap-drop=ALL)
+fi
+
+# No network mode: disable all network access
+if [[ "$no_network" == true ]]; then
+    docker_args+=(--network=none)
 fi
 
 # Pull mode: always pull latest image

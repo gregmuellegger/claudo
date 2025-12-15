@@ -127,11 +127,13 @@ Options:
   --host          Use host network mode
   --no-sudo       Disable sudo (adds no-new-privileges restriction)
   --no-privileges Drop all capabilities (most restrictive)
+  --no-network    Disable network access (breaks Claude Code)
   --dind          Docker-in-Docker (runs dockerd inside container, requires privileged)
   --docker-socket Mount host Docker socket (sibling containers, host root equivalent)
   --git           Mount git config (~/.gitconfig and credentials) for committing
   --pull          Always pull the latest image before running
   -n, --name NAME Create a named container 'claudo-NAME' that persists after exit
+  -a, --attach NAME  Attach to existing container 'claudo-NAME'
   --tmp           Run isolated (no directory mount, workdir /workspaces/tmp)
   -v, --verbose   Display docker command before executing
   --dry-run       Show docker command without executing (implies --verbose)
@@ -147,10 +149,12 @@ Examples:
   claudo --host                   Start with host networking
   claudo --no-sudo                Start without sudo privileges
   claudo --no-privileges          Start with all caps dropped
+  claudo --no-network             Start without network access
   claudo --dind                   Docker-in-Docker (isolated daemon)
   claudo --docker-socket          Use host Docker socket (sibling containers)
   claudo --git                    Enable git commits from inside container
   claudo -n myproject             Start named persistent container
+  claudo -a myproject             Attach to existing container
   claudo -- claude --help         Run claude with arguments
   claudo -n dev -e DEBUG=1 -- claude
                                   Combined options with command
