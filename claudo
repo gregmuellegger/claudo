@@ -51,7 +51,7 @@ Examples:
                                   Custom httpjail rule
 
 The current directory is mounted at /workspaces/<dirname>.
-~/.claude is mounted for authentication persistence.
+~/.claude is mounted at /claude-config for authentication persistence.
 EOF
 }
 
@@ -59,6 +59,21 @@ current_dir=$(pwd)
 dir_name=$(basename "$current_dir")
 # Sanitize directory name for Docker volume mount (colons break -v syntax)
 safe_dir_name="${dir_name//:/-}"
+
+# Build a shell command string with each arg properly double-quoted
+build_cmd_string() {
+    local cmd=""
+    for arg in "$@"; do
+        [[ -n "$cmd" ]] && cmd+=" "
+        # Escape for double quotes: \ $ ` "
+        local escaped="${arg//\\/\\\\}"
+        escaped="${escaped//\$/\\\$}"
+        escaped="${escaped//\`/\\\`}"
+        escaped="${escaped//\"/\\\"}"
+        cmd+="\"$escaped\""
+    done
+    echo "$cmd"
+}
 
 env_args=()
 network_args=()
@@ -234,7 +249,8 @@ fi
 docker_args=(
     run $tty_flag $remove_flag
     --hostname claudo
-    -v "$HOME/.claude:/home/claudo/.claude"
+    -v "$HOME/.claude:/claude-config"
+    -e CLAUDE_CONFIG_DIR=/claude-config
 )
 
 # Security: --no-sudo adds no-new-privileges restriction
@@ -294,21 +310,32 @@ docker_args+=("${env_args[@]}")
 docker_args+=("${network_args[@]}")
 # shellcheck disable=SC2086
 [[ -n "$docker_opts" ]] && docker_args+=($docker_opts)
+
+# Use /bin/sh as entrypoint, which detects and execs the user's default shell
+docker_args+=(--entrypoint /bin/sh)
 docker_args+=("$image")
 
+# Shell wrapper: detect user's shell and run command as interactive login shell
+# -l = login shell (sources .profile/.zprofile)
+# -i = interactive shell (sources .bashrc/.zshrc)
+shell_wrapper='exec ${SHELL:-$(getent passwd $(id -un) | cut -d: -f7)} -lic'
+
 if [[ -n "$prompt_arg" ]]; then
-    # Prompt mode: run claude -p with the provided prompt
-    docker_args+=("claude" "--dangerously-skip-permissions" "-p" "$prompt_arg")
+    cmd_string=$(build_cmd_string "claude" "--dangerously-skip-permissions" "-p" "$prompt_arg")
 elif [[ ${#command_args[@]} -eq 0 ]]; then
     if [[ -t 0 ]]; then
-        docker_args+=("claude" "--dangerously-skip-permissions")
+        cmd_string=$(build_cmd_string "claude" "--dangerously-skip-permissions")
     else
         # Piped input with no command - send to claude -p
-        docker_args+=("claude" "--dangerously-skip-permissions" "-p")
+        cmd_string=$(build_cmd_string "claude" "--dangerously-skip-permissions" "-p")
     fi
 else
-    docker_args+=("${command_args[@]}")
+    cmd_string=$(build_cmd_string "${command_args[@]}")
 fi
+
+# Escape single quotes in cmd_string for embedding in single quotes: ' -> '\''
+escaped_cmd="${cmd_string//\'/\'\\\'\'}"
+docker_args+=(-c "$shell_wrapper '$escaped_cmd'")
 
 # Check if httpjail is available when needed
 if [[ "$httpjail_mode" == true ]]; then

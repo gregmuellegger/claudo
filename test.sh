@@ -71,10 +71,15 @@ echo "Testing --tmp workdir is writable..."
 output=$(./claudo --tmp -- touch /workspaces/tmp/testfile 2>&1)
 [[ -z "$output" ]] && pass "--tmp workdir is writable" || fail "--tmp writable: $output"
 
-# Test: ~/.claude is mounted
+# Test: ~/.claude is mounted at /claude-config
 echo "Testing ~/.claude mount..."
-output=$(./claudo -- ls -la /home/claudo/.claude 2>&1 || true)
-[[ "$output" != *"No such file"* ]] && pass "~/.claude is mounted" || fail "~/.claude mount: $output"
+output=$(./claudo -- ls -la /claude-config 2>&1 || true)
+[[ "$output" != *"No such file"* ]] && pass "~/.claude is mounted at /claude-config" || fail "~/.claude mount: $output"
+
+# Test: CLAUDE_CONFIG_DIR is set
+echo "Testing CLAUDE_CONFIG_DIR is set..."
+output=$(./claudo -- printenv CLAUDE_CONFIG_DIR)
+[[ "$output" == "/claude-config" ]] && pass "CLAUDE_CONFIG_DIR=/claude-config" || fail "CLAUDE_CONFIG_DIR: $output"
 
 # Test: Hostname is set
 echo "Testing hostname..."
@@ -119,6 +124,16 @@ echo "Testing --host network..."
 output=$(./claudo --dry-run --host -- echo test 2>&1)
 [[ "$output" == *"--network host"* ]] && pass "--host sets network mode" || fail "--host: $output"
 
+# Test: Shell wrapper uses --entrypoint /bin/sh
+echo "Testing shell wrapper entrypoint..."
+output=$(./claudo --dry-run -- echo test 2>&1)
+[[ "$output" == *"--entrypoint /bin/sh"* ]] && pass "uses --entrypoint /bin/sh" || fail "entrypoint: $output"
+
+# Test: Shell wrapper detects user's shell
+echo "Testing shell wrapper command..."
+output=$(./claudo --dry-run -- echo test 2>&1)
+[[ "$output" == *'exec ${SHELL:-$(getent passwd $(id -un) | cut -d: -f7)} -lic'* ]] && pass "uses shell detection wrapper" || fail "shell wrapper: $output"
+
 # Test: Named container (create and cleanup)
 echo "Testing --name creates persistent container..."
 ./claudo -n testcontainer -- echo "named" > /dev/null
@@ -148,12 +163,12 @@ output=$(./claudo --dind -- printenv DIND_ENABLED 2>&1 || true)
 # Test: --prompt passes -p to claude
 echo "Testing --prompt passes -p to claude..."
 output=$(./claudo --dry-run --prompt "hello world" 2>&1)
-[[ "$output" == *"claude --dangerously-skip-permissions -p hello world"* ]] && pass "--prompt passes -p" || fail "--prompt: $output"
+[[ "$output" == *'-lic '"'"'"claude" "--dangerously-skip-permissions" "-p" "hello world"'"'"* ]] && pass "--prompt passes -p" || fail "--prompt: $output"
 
 # Test: -p is alias for --prompt
 echo "Testing -p is alias for --prompt..."
 output=$(./claudo --dry-run -p "test prompt" 2>&1)
-[[ "$output" == *"-p test prompt"* ]] && pass "-p works" || fail "-p: $output"
+[[ "$output" == *'"-p" "test prompt"'* ]] && pass "-p works" || fail "-p: $output"
 
 # Test: --docker-opts passes options to docker
 echo "Testing --docker-opts passes options to docker..."

@@ -44,16 +44,16 @@ RUN userdel -r ubuntu 2>/dev/null || true \
 
 ENV HOSTNAME=claudo
 ENV TERM=xterm-256color
-ENV CLAUDE_CONFIG_DIR=/home/claudo/.claude
+ENV CLAUDE_CONFIG_DIR=/claude-config
 ENV BUILD_TIME="${BUILD_TIME}"
 
 USER claudo
 WORKDIR /home/claudo
 ENV PATH="/home/claudo/.local/bin:$PATH"
 
-# Create /workspaces/tmp for --tmp mode with correct ownership
+# Create /workspaces/tmp for --tmp mode and /claude-config for config with correct ownership
 USER root
-RUN mkdir -p /workspaces/tmp && chown claudo:claudo /workspaces/tmp
+RUN mkdir -p /workspaces/tmp /claude-config && chown claudo:claudo /workspaces/tmp /claude-config
 USER claudo
 
 # Install oh-my-zsh
