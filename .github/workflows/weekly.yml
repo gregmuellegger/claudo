@@ -40,6 +40,12 @@ jobs:
           # No cache to ensure fresh dependencies
           no-cache: true
 
+      - name: Install httpjail and nftables
+        run: |
+          sudo apt-get update && sudo apt-get install -y nftables
+          curl -sL https://github.com/coder/httpjail/releases/download/v0.6.0/httpjail-0.6.0-linux-x86_64.tar.gz | tar xz -C /tmp
+          sudo mv /tmp/httpjail-0.6.0-linux-x86_64/httpjail /usr/local/bin/
+
       - name: Run tests
         run: |
           export CLAUDO_IMAGE=claudo:test
